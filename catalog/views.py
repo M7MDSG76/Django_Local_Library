@@ -177,7 +177,7 @@ class AllLoanedBooksListView(PermissionRequiredMixin, LoginRequiredMixin, ListVi
     """
     
     model = BookInstance
-    template_name = 'librarian/all_borrowed_books.html'
+    template_name = 'Librarian/all_borrowed_books.html'
     pagenated_by = 10
     permission_required = 'catalog.can_view_book_instances'
     
