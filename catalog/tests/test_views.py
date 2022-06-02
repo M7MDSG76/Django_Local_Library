@@ -1,7 +1,7 @@
 from cgi import test
 import datetime
 from urllib import response
-from django.test import TestCase, Client
+from django.test import SimpleTestCase, TestCase, Client
 from django.utils import timezone
 
 from catalog.models import *
@@ -415,3 +415,15 @@ class RenewBookLibrarianFunctionView(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertFormError(response, 'form', 'due_back', 'Invalid date - renewal more than 4 weeks ahead')
         
+        
+class AllLoanedBooksListView(TestCase):
+    
+    def setUp(self):
+        test_user = User.objects.create(username = 'mohammed', password = '12345')
+        permission = Permission.objects.get(name = 'Can view book instance')
+        test_user.user_permissions.add(permission)
+    def test_access_successfully(self):
+        login = self.client.login(username = 'mohammed', password = '12345')
+        
+        response = self.client.get(reverse('all-borrowed-books'))
+        self.assertEqual(response.status_code, 200)
