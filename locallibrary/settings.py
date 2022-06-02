@@ -33,7 +33,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 DEBUG = os.environ.get('DJANGO_DEBUG', '') != 'False'
 
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    'm7-local-library.herokuapp.com',
+    ]
 
 
 # Application definition
