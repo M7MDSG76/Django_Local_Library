@@ -1,0 +1,16 @@
+{% extends 'base_generic.html'%}
+
+{% block content %}
+
+<h1>Library Members:</h1>
+<br>
+<ul>
+{% for member in members%}
+    <li>
+        <a href="{{member.get_absolute_url}}">{{member}}</a>
+        <br>
+        {{member.email}}
+    </li>
+{% endfor %}
+</ul>
+{% endblock %}

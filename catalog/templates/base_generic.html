@@ -19,6 +19,7 @@
           <li><a href="{% url 'books' %}">Books</a></li>
           <li><a href="{% url 'authors'%}">Authors</a></li>
           <li><a href="{% url 'geners' %}">Genres</a></li>
+          <li><a href="{% url 'member-all' %}">Library Members</a></li>
           {% if user.is_authenticated and perms.catalog.can_view_book_instance%}
           <li><a href="{% url 'all-borrowed-books'%}">All borrowed books</a></li>
           {% endif %}
@@ -33,7 +34,8 @@
             <li><a href="{% url 'logout'%}?next={% url 'index' %}">Logout</a></li>
           {% else %}
             <li><a href="{% url 'login'%}?next={{request.path}}">Login</a></li>
-          {% endif %}
+            <li><a href="{% url 'member-create'%}?next={{request.path}}">New Library Member</a></li>
+            {% endif %}
         </ul>
      {% endblock %}
       </div>

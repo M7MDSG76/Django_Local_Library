@@ -1,6 +1,4 @@
-from urllib import request
-from venv import create
-from django.shortcuts import get_object_or_404, redirect, render
+from django.shortcuts import get_object_or_404, render
 from .models import *
 from django.views.generic import ListView, DetailView
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
@@ -20,9 +18,9 @@ from django.views.generic.edit import DeleteView, CreateView, UpdateView
 
 from django.utils.translation import gettext_lazy as _
 
-from django.contrib.auth import authenticate, login
-from django.contrib.auth import hashers 
+from django.contrib.auth import login
 
+#-------------------------------Home page View-------------------------------
 def index(request): 
     num_books = Book.objects.all().count
     num_instances = BookInstance.objects.all().count
@@ -49,20 +47,13 @@ def index(request):
     }
     return render(request,'index.html', context)
 
-
-class BookListView(ListView):
-    # The model represented in the view
-    model = Book
-    
-    # Rendered template
-    template_name = 'book_list.html'
-    
-    # context_object_name => {'books' : Book.objects.all()}
-    context_object_name = 'books'
-    paginate_by = 5
+#-------------------------------Author Views-------------------------------
+class AuthorDetailView(DetailView):
+    model = Author
+    template_name = 'Author_detail.html'
     
     def get_context_data(self, **kwargs):
-        context = super(BookListView, self).get_context_data(**kwargs)
+        context = super(AuthorDetailView, self).get_context_data(**kwargs)
         context.update({
             'num_visits' : self.request.session['num_visits'],
         })
@@ -73,7 +64,6 @@ class BookListView(ListView):
         self.request.session['num_visits'] = num_visits + 1
         return super().get(self.request, *args, **kwargs)
  
-
 class AuthorListView(ListView):
     model = Author
     template_name = 'author_list.html'
@@ -96,7 +86,31 @@ class AuthorListView(ListView):
         self.request.session['num_visits'] = num_visits + 1
         return super().get(self.request, *args, **kwargs)
     
+# Author Edite Views     
+class AuthorCreate(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
+    model = Author
+    fields = ['first_name', 'last_name', 'date_of_birth', 'date_of_death', 'lang']
+    initial = {'date_of_birth':'2013-01-01','lang': 'a'} 
+    template_name = 'Librarian/create_author_form.html'
+    permission_required = 'catalog.can_create_book'
+   
+   
+class AuthorUpdate(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
+    model = Author 
+    fields = '__all__' # Not recomended for security reasons(potential security issues if new fields added).
+    template_name = 'Librarian/update_author_form.html'
+    permission_required = 'catalog.can_create_book'
+    
+    
+class AuthorDelete(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
+    model = Author
+    success_url = reverse_lazy('authors')
+    template_name = 'Librarian/confirm_delete_author_form.html'
+    permission_required = 'catalog.can_create_book'
+#_________________________________________________________________________________________
 
+
+#-------------------------------Gener URLS------------------------------- 
 class GenerListView(ListView):
     model = Gener
     template_name = 'gener_list.html'
@@ -118,8 +132,33 @@ class GenerListView(ListView):
         num_visits = self.request.session.get('num_visits', 0)
         self.request.session['num_visits'] = num_visits + 1
         return super().get(self.request, *args, **kwargs)
+#_________________________________________________________________________________________    
+
     
+#----------------------------------Book and BookInsatances Views----------------------------------
+class BookListView(ListView):
+    # The model represented in the view
+    model = Book
     
+    # Rendered template
+    template_name = 'book_list.html'
+    
+    # context_object_name => {'books' : Book.objects.all()}
+    context_object_name = 'books'
+    paginate_by = 5
+    
+    def get_context_data(self, **kwargs):
+        context = super(BookListView, self).get_context_data(**kwargs)
+        context.update({
+            'num_visits' : self.request.session['num_visits'],
+        })
+        return context
+    
+    def get(self, *args, **kwargs):
+        num_visits = self.request.session.get('num_visits', 0)
+        self.request.session['num_visits'] = num_visits + 1
+        return super().get(self.request, *args, **kwargs)
+     
 class BookDetailView(DetailView):
     model = Book
     template_name = 'book_details.html'
@@ -135,25 +174,7 @@ class BookDetailView(DetailView):
         num_visits = self.request.session.get('num_visits', 0)
         self.request.session['num_visits'] = num_visits + 1
         return super().get(self.request, *args, **kwargs)
-    
-        
-class AuthorDetailView(DetailView):
-    model = Author
-    template_name = 'Author_detail.html'
-    
-    def get_context_data(self, **kwargs):
-        context = super(AuthorDetailView, self).get_context_data(**kwargs)
-        context.update({
-            'num_visits' : self.request.session['num_visits'],
-        })
-        return context
-    
-    def get(self, *args, **kwargs):
-        num_visits = self.request.session.get('num_visits', 0)
-        self.request.session['num_visits'] = num_visits + 1
-        return super().get(self.request, *args, **kwargs)
-    
-    
+              
 class LoanedBooksByUserListView(LoginRequiredMixin, ListView):
     """
         List View to view to list of booked borrowed by user
@@ -197,7 +218,6 @@ def renew_book_librarian(request, pk):
     
     if request.method == 'POST':
         
-        #form = RenewBookForm(request.POST)
         form = RenewBookModelForm(request.POST)
         
         if form.is_valid():
@@ -227,8 +247,6 @@ def renew_book_librarian(request, pk):
         }
 
         return render(request, 'Librarian/book_renew_librarian.html', context)    
-   
-   
     
 #Book Edite Views
 class BookCreate(LoginRequiredMixin, PermissionRequiredMixin, CreateView ):
@@ -250,43 +268,31 @@ class BookDelete(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
     success_url = reverse_lazy('books')
     template_name = 'confirm_delete_book_form.html'
     permission_required = 'catalog.can_create_book'
-    
+#_________________________________________________________________________________________     
 
-# Author Edite Views     
-class AuthorCreate(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
-    model = Author
-    fields = ['first_name', 'last_name', 'date_of_birth', 'date_of_death', 'lang']
-    initial = {'date_of_birth':'2013-01-01','lang': 'a'} 
-    template_name = 'Librarian/create_author_form.html'
-    permission_required = 'catalog.can_create_book'
-   
-   
-class AuthorUpdate(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
-    model = Author 
-    fields = '__all__' # Not recomended for security reasons(potential security issues if new fields added).
-    template_name = 'Librarian/update_author_form.html'
-    permission_required = 'catalog.can_create_book'
-    
-    
-class AuthorDelete(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
-    model = Author
-    success_url = reverse_lazy('authors')
-    template_name = 'Librarian/confirm_delete_author_form.html'
-    permission_required = 'catalog.can_create_book'
-    
-    
-# User Views
+
+#----------------------------------Library Member Views----------------------------------    
 def Library_member_create_view(request):
-    
+    # Current user is the user using the website at time.
     current_user = request.user
+    
+    # Check if the current user is already signedup in the data base or not
     if User.objects.filter(username = current_user):
+        
+        # If registerd return a response with a message.
         return HttpResponse('<h2>You are already registered</h2>')
-    # if this is requestd by the form((POST request))
+    
+    # If this is requestd by the form((POST request))
     if request.method == 'POST':
         print('----------------begining of the post part----------------')
+        
+        # Create form
         form = CreateLibraryMemberForm(request.POST)
+        
+        
         if form.is_valid():
             
+            # Assign form data to variables.
             username= form.cleaned_data['username']
             first_name= form.cleaned_data['first_name']
             last_name= form.cleaned_data['last_name']
@@ -295,25 +301,36 @@ def Library_member_create_view(request):
             password= form.cleaned_data['password']
             print('----------------all variables has been set----------------')
             
-                
+            # Create User object with for the new user by variables.    
             user= User.objects.create_user(username= username, first_name= first_name, last_name= last_name, email= email)
+            
+            # Password should be set with User.set_password() for hashing, where hashing is required in django Authintcation system   
             user.set_password(password)
+            
+            # Save user to database.
             user.save()
-        
+            
+            # Login user.
             login(request, user)
+            
+            # Create LibraryMember object from the form data.
             library_member = LibraryMember.objects.create(user=user, first_name= first_name, last_name= last_name, email= email, membership_start_date= membership_start_date)
             
+            # Save object to the database.
             library_member.save()
-        
-        
             print(f'Library Member {library_member} Has been Created!')
+            
+            # Redirect user to the home page. 
             return HttpResponseRedirect(reverse('index'))
+        
+        # If the Form is not valid set the form errors and send the form back in the context
         context= {
             'form': form
         }
+        # render the create_library_member_form page again with the new form.
         return render(request= request, template_name= 'Library_members/create_library_member_form.html', context= context)
     
-    # if get or else
+    # If the request method is get or else
     else:
         print('----------------begining of the get part----------------')
         form = CreateLibraryMemberForm()
@@ -322,9 +339,16 @@ def Library_member_create_view(request):
         }
         
         return render(request= request, template_name= 'Library_members/create_library_member_form.html', context= context)
-        
-        
     
+class LibraryMemberListView(ListView):
+    model= LibraryMember
+    context_object_name= 'members'
+    template_name= 'Library_members/Library_members_list.html'
+                
+class LibraryMemberProfile(DetailView):
+    model= LibraryMember
+    context_object_name= 'member'
+    template_name= 'Library_members/Library_member_profile.html'
+#_________________________________________________________________________________________
 
-    
     

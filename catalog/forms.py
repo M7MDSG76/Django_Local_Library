@@ -8,7 +8,8 @@ from django.utils.translation import gettext_lazy as _
 from .models import BookInstance
 
 from django.contrib.auth.models import User
-    
+
+#-------------------------------Book Forms-------------------------------
 class RenewBookModelForm(forms.ModelForm):
     
     def clean_due_back(self):
@@ -30,8 +31,10 @@ class RenewBookModelForm(forms.ModelForm):
          fields = ['due_back']
          labels = {'due_back': _('renewal date')}
          help_texts = {'due_back': _('Enter a date between now and 4 weeks (default 3)')}
-    
-    
+#_________________________________________________________________________________________    
+   
+   
+#-------------------------------LibraryMember Forms------------------------------- 
 def check_sympols(input):
     """ 
     Some fields cannot contain symplos, This method check if the input contain any sympols.
@@ -51,14 +54,11 @@ def check_sympols(input):
     if sympols_counter == 0:
         return False
     elif sympols_counter > 0:
-        return True
-
-            
+        return True          
 class CreateLibraryMemberForm(forms.Form):
     """
     To create Library Member we need to create a new User first
-    therefore we take user cardentials to create a new account as 
-    a Library Member.      
+    after that we link our new user with the library member account with OneToOneField.     
     """
     username = forms.CharField(max_length=150,
         help_text=_(
@@ -90,9 +90,7 @@ class CreateLibraryMemberForm(forms.Form):
     def clean_email(self):
         data = self.cleaned_data['email']
         return data
-    # def clean_confirm_password(self):
-    #     data = self.cleaned_data['confirm_password']
-    #     return data
+   
     def clean_password(self):
         """
         Password sinitization rules:
@@ -113,6 +111,6 @@ class CreateLibraryMemberForm(forms.Form):
         #     raise ValidationError(_('Passwords not matching!'))
         
         return data
-
+#_________________________________________________________________________________________
     
     

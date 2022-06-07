@@ -7,6 +7,7 @@ from django.utils.translation import gettext_lazy as _
 from django.utils import timezone
 from pkg_resources import require
 
+
 class Gener(models.Model):
     name = models.CharField(max_length=100,
                             help_text = 'Enter a book genre (e.g. Science Fiction)')
@@ -72,16 +73,21 @@ class Book(models.Model):
     def display_gener(self):
         return ', '.join(gener.name for gener in self.gener.all()[:3])
     display_gener.short_description = 'Gener'
+
     
 class LibraryMember(models.Model):
     user= models.OneToOneField(User, on_delete=models.CASCADE)
-    email= models.EmailField(verbose_name='Email', primary_key=True)
+    email= models.EmailField(verbose_name='Email')
     first_name= models.CharField(verbose_name=_('Memeber first name'), max_length= 30)
     last_name= models.CharField(verbose_name=_('Memeber last name'), max_length= 30)
     membership_start_date = models.DateField(verbose_name=_('MemberShip start date'), default=timezone.now)
     
     def __str__(self):
-        return str(self.user.username)
+        return f'{self.first_name} {self.last_name}'
+    
+    def get_absolute_url(self):
+        return reverse('member-profile', args=[str(self.pk)])
+    
     
 class BookInstance(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, 
