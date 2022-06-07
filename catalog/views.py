@@ -1,7 +1,5 @@
-from ast import Delete
-from mimetypes import init
-from multiprocessing import context
-from pyexpat import model
+from urllib import request
+from venv import create
 from django.shortcuts import get_object_or_404, redirect, render
 from .models import *
 from django.views.generic import ListView, DetailView
@@ -13,7 +11,7 @@ from django.contrib.auth.decorators import login_required, permission_required
 #Form 
 import datetime
 from django.shortcuts import render, get_object_or_404
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpResponse
 from django.urls import reverse, reverse_lazy
 from catalog.forms import *
 
@@ -21,6 +19,9 @@ from catalog.forms import *
 from django.views.generic.edit import DeleteView, CreateView, UpdateView
 
 from django.utils.translation import gettext_lazy as _
+
+from django.contrib.auth import authenticate, login
+from django.contrib.auth import hashers 
 
 def index(request): 
     num_books = Book.objects.all().count
@@ -72,12 +73,6 @@ class BookListView(ListView):
         self.request.session['num_visits'] = num_visits + 1
         return super().get(self.request, *args, **kwargs)
  
- 
- 
-    # Overriding the get_queryset method to customize the queryset.  
-    # def get_queryset(self):
-    #     return Book.objects.filter(title__icontains='h')[:5]
-
 
 class AuthorListView(ListView):
     model = Author
@@ -167,6 +162,8 @@ class LoanedBooksByUserListView(LoginRequiredMixin, ListView):
     template_name = 'user/bookinstance_list_borrowed_user.html'
     pagenated_by = 10
     
+    
+   
     def get_queryset(self):
         return BookInstance.objects.filter(borrower= self.request.user).filter(status__exact='o').order_by('due_back')
 
@@ -255,13 +252,11 @@ class BookDelete(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
     permission_required = 'catalog.can_create_book'
     
 
-
 # Author Edite Views     
 class AuthorCreate(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
     model = Author
     fields = ['first_name', 'last_name', 'date_of_birth', 'date_of_death', 'lang']
     initial = {'date_of_birth':'2013-01-01','lang': 'a'} 
-    help_texts = {'lang': _('Choose Languages you write with!!!')} # Not working!!!!
     template_name = 'Librarian/create_author_form.html'
     permission_required = 'catalog.can_create_book'
    
@@ -280,8 +275,56 @@ class AuthorDelete(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
     permission_required = 'catalog.can_create_book'
     
     
+# User Views
+def Library_member_create_view(request):
+    
+    current_user = request.user
+    if User.objects.filter(username = current_user):
+        return HttpResponse('<h2>You are already registered</h2>')
+    # if this is requestd by the form((POST request))
+    if request.method == 'POST':
+        print('----------------begining of the post part----------------')
+        form = CreateLibraryMemberForm(request.POST)
+        if form.is_valid():
+            
+            username= form.cleaned_data['username']
+            first_name= form.cleaned_data['first_name']
+            last_name= form.cleaned_data['last_name']
+            email= form.cleaned_data['email']
+            membership_start_date= datetime.datetime.now()
+            password= form.cleaned_data['password']
+            print('----------------all variables has been set----------------')
+            
+                
+            user= User.objects.create_user(username= username, first_name= first_name, last_name= last_name, email= email)
+            user.set_password(password)
+            user.save()
+        
+            login(request, user)
+            library_member = LibraryMember.objects.create(user=user, first_name= first_name, last_name= last_name, email= email, membership_start_date= membership_start_date)
+            
+            library_member.save()
+        
+        
+            print(f'Library Member {library_member} Has been Created!')
+            return HttpResponseRedirect(reverse('index'))
+        context= {
+            'form': form
+        }
+        return render(request= request, template_name= 'Library_members/create_library_member_form.html', context= context)
+    
+    # if get or else
+    else:
+        print('----------------begining of the get part----------------')
+        form = CreateLibraryMemberForm()
+        context = {
+            'form': form
+        }
+        
+        return render(request= request, template_name= 'Library_members/create_library_member_form.html', context= context)
+        
         
     
-    
+
     
     

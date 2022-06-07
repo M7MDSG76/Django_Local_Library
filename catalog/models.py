@@ -1,8 +1,11 @@
 from django.db import models
 from django.urls import reverse # Used to generate URLs by reversing the URL patterns
 import uuid
-from django.contrib.auth.models import User
-from datetime import date
+from django.contrib.auth.models import User, AbstractUser
+from datetime import date, datetime
+from django.utils.translation import gettext_lazy as _
+from django.utils import timezone
+from pkg_resources import require
 
 class Gener(models.Model):
     name = models.CharField(max_length=100,
@@ -24,7 +27,7 @@ class Author(models.Model):
     last_name = models.CharField(max_length=100)
     date_of_birth = models.DateField(null=True, blank=True)
     date_of_death = models.DateField('Died', null=True, blank=True)
-    lang =  models.ManyToManyField(Languages, help_text = 'Choose a languages you write with.')
+    lang =  models.ManyToManyField(Languages, help_text = 'Choose a languages you write with ')
     
     class Meta: 
         ordering = ['first_name', 'last_name']
@@ -70,6 +73,15 @@ class Book(models.Model):
         return ', '.join(gener.name for gener in self.gener.all()[:3])
     display_gener.short_description = 'Gener'
     
+class LibraryMember(models.Model):
+    user= models.OneToOneField(User, on_delete=models.CASCADE)
+    email= models.EmailField(verbose_name='Email', primary_key=True)
+    first_name= models.CharField(verbose_name=_('Memeber first name'), max_length= 30)
+    last_name= models.CharField(verbose_name=_('Memeber last name'), max_length= 30)
+    membership_start_date = models.DateField(verbose_name=_('MemberShip start date'), default=timezone.now)
+    
+    def __str__(self):
+        return str(self.user.username)
     
 class BookInstance(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, 
@@ -90,7 +102,7 @@ class BookInstance(models.Model):
                               blank = True
                               )   
     
-    borrower = models.ForeignKey(User, on_delete= models.SET_NULL, null=True, blank=True) 
+    borrower = models.OneToOneField(User, on_delete= models.SET_NULL, null=True, blank=True) 
     
     class Meta:
         ordering = ['due_back']

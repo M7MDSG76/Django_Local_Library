@@ -1,6 +1,6 @@
 from django.urls import path, include
 from . import views
-# from django.contrib.auth.urls
+ #from django.contrib.auth.urls
 urlpatterns = [
     path('', views.index, name = 'index'),
     path('books/', views.BookListView.as_view(), name = 'books'),
@@ -31,6 +31,12 @@ urlpatterns = [
     path('book/create/', views.BookCreate.as_view(), name= 'book-create'),
     path('book/<int:pk>/update/', views.BookUpdate.as_view(), name= 'book-update'),
     path('book/<int:pk>/delete/', views.BookDelete.as_view(), name= 'book-delete'),
+    
+    
+    # Library Member Urls. 
+    path('member/create/', views.Library_member_create_view, name='user-create'),
+    
+    
     
     
     

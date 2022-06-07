@@ -29,8 +29,13 @@ class BookAdmin(admin.ModelAdmin):
     list_filter = ('author', 'gener')
 
     inlines = [BookInstanceInline]
-
-
+    
+    
+@admin.register(LibraryMember)
+class LibraryMemberAdmin(admin.ModelAdmin):
+    list_display= ('user', 'first_name', 'last_name', 'email', 'membership_start_date')
+    list_filter= ('user',)
+    
     
 @admin.register(BookInstance)
 class BookInstanceAdmin(admin.ModelAdmin):
