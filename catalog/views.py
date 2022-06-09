@@ -50,7 +50,7 @@ def index(request):
 #-------------------------------Author Views-------------------------------
 class AuthorDetailView(DetailView):
     model = Author
-    template_name = 'Author_detail.html'
+    template_name = 'Author/author_detail.html'
     
     def get_context_data(self, **kwargs):
         context = super(AuthorDetailView, self).get_context_data(**kwargs)
@@ -66,7 +66,7 @@ class AuthorDetailView(DetailView):
  
 class AuthorListView(ListView):
     model = Author
-    template_name = 'author_list.html'
+    template_name = 'Author/author_list.html'
     
     # context_object_name =>'authors' : Author.objects.all()
     context_object_name = 'authors'
@@ -91,22 +91,22 @@ class AuthorCreate(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
     model = Author
     fields = ['first_name', 'last_name', 'date_of_birth', 'date_of_death', 'lang']
     initial = {'date_of_birth':'2013-01-01','lang': 'a'} 
-    template_name = 'Librarian/create_author_form.html'
-    permission_required = 'catalog.can_create_book'
+    template_name = 'Author/Edit/create_author_form.html'
+    permission_required = 'catalog.create_author'
    
    
 class AuthorUpdate(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
     model = Author 
     fields = '__all__' # Not recomended for security reasons(potential security issues if new fields added).
-    template_name = 'Librarian/update_author_form.html'
-    permission_required = 'catalog.can_create_book'
+    template_name = 'Author/Edit/update_author_form.html'
+    permission_required = 'catalog.change_author' # default permissions verbus name => 'Can change author'
     
     
 class AuthorDelete(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
     model = Author
     success_url = reverse_lazy('authors')
-    template_name = 'Librarian/confirm_delete_author_form.html'
-    permission_required = 'catalog.can_create_book'
+    template_name = 'Author/Edit/confirm_delete_author_form.html'
+    permission_required = 'catalog.delete_author'
 #_________________________________________________________________________________________
 
 
@@ -188,7 +188,6 @@ class LoanedBooksByUserListView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         return BookInstance.objects.filter(borrower= self.request.user).filter(status__exact='o').order_by('due_back')
 
-    
 class AllLoanedBooksListView(PermissionRequiredMixin, LoginRequiredMixin, ListView):
     """
         List View to view for all borrowed books.
@@ -208,7 +207,6 @@ class AllLoanedBooksListView(PermissionRequiredMixin, LoginRequiredMixin, ListVi
             
         })
         return context
-
 
 @login_required
 @permission_required('catalog.can_mark_returned')
@@ -254,15 +252,13 @@ class BookCreate(LoginRequiredMixin, PermissionRequiredMixin, CreateView ):
     fields = ['title', 'author', 'summery', 'isbn', 'gener', 'lang']
     template_name = 'create_book_form.html'
     permission_required = 'catalog.can_create_book'
-    
-    
+      
 class BookUpdate(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
     model = Book
     fields = ['title', 'author', 'summery', 'isbn', 'gener', 'lang']
     template_name = 'update_book_form.html'
     permission_required = 'catalog.can_create_book'
-    
-    
+       
 class BookDelete(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
     model = Book
     success_url = reverse_lazy('books')
@@ -349,6 +345,28 @@ class LibraryMemberProfile(DetailView):
     model= LibraryMember
     context_object_name= 'member'
     template_name= 'Library_members/Library_member_profile.html'
+    def get_context_data(self, **kwargs):
+        context = super(LibraryMemberProfile, self).get_context_data(**kwargs)
+        user= self.object.user
+        context.update({
+            'borrowed_books' : BookInstance.objects.filter(borrower= user),
+        })
+        return context
+    
+
+class LibrarMemberEdit(UpdateView):
+    model= LibraryMember
+    template_name= 'Library_members/edit/edit_library_member.html'
+    success_url= reverse_lazy('members')
+    permission_required= 'catalog.change_library_member'
+    fields= ['email', 'first_name', 'last_name']
+
+class LibrarMemberDelete(DeleteView):
+    model= LibraryMember
+    template_name= 'Library_members/edit/delete_library_member.html'
+    success_url= 'members'
+    permission_required= 'catalog.delete_library_member'
+
 #_________________________________________________________________________________________
 
     

@@ -1,0 +1,34 @@
+{% extends 'base_generic.html'%}
+
+
+{%block content%}
+
+    {% if author%}
+        <div class="author-detail-cont-01">
+            <div class="author-detail-cont-02">
+                <h2>Author Name: <strong>{{ author.first_name }} {{author.last_name }}</strong></h2>
+                <p>{{author.date_of_birth}}</p>
+                <ul class="author-edit">
+                    {% if user.is_authenticated and perms.catalog.change_author %}
+                        <li class="edit-item"><p><a href="{% url 'author-update' author.id %}">Edit</a></p></li>
+                    {% endif %}
+                    {% if user.is_authenticated and perms.catalog.delete_author  %}
+                        <li class="edit-item"><p><a href="{% url 'author-delete' author.id %}">Delete</a></p></li>
+                    {% endif %}
+                </ul>
+            </div>
+        <br>
+            <div class="author-detail-cont-03">
+                {% for book in author.book_set.all%}
+                <ul>
+                    <li>
+                        <h3> <a href="{{ book.get_absolute_url }}">{{ book.title }}</a></h3>
+                        <p>{{book.summery}}</p>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        {% endfor %}
+            
+    {% endif %}
+{% endblock %}

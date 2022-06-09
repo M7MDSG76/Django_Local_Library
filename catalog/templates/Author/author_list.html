@@ -17,6 +17,7 @@
     {% else %}
     <h3>No authors in the library</h3>
     {% endif %}
+    <p><a href="{% url 'author-create' %}">Creat New author</a></p>
     {%block paginated%}
     {% if is_paginated %}
         <div class="pagination">

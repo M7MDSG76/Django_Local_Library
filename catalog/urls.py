@@ -46,8 +46,10 @@ urlpatterns = [
     
     #-------------------------------LibraryMember URLS------------------------------- 
     path('member/create/', views.Library_member_create_view, name='member-create'),
-    path('members/', views.LibraryMemberListView.as_view(), name= 'member-all'),
+    path('members/', views.LibraryMemberListView.as_view(), name= 'members'),
     path('member/profile/<int:pk>', views.LibraryMemberProfile.as_view(), name= 'member-profile'),
+    path('member/<int:pk>/edit', views.LibrarMemberEdit.as_view(), name= 'member-edit'),
+    path('member/<int:pk>/delete', views.LibrarMemberDelete.as_view(), name= 'member-delete'),
     #_________________________________________________________________________________________
     
     

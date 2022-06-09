@@ -1,0 +1,15 @@
+{% extends 'base_generic.html' %}
+
+{% block title %} Edit Member{% endblock%}
+
+{% block content %}
+<h1>Edit Member</h1>
+<form method="post">
+    
+    {%csrf_token%}
+    <table>
+    {{form.as_table}}
+    </table>
+    <input type="submit" value="Submit">
+</form>
+{% endblock %}
