@@ -14,9 +14,19 @@
 </ul>
 <br> <hr>
 <ul>
-    {% if borrowed_books %}
+
+    {% if borrowed_books and request.user == member.user %}
         {% for borrowed_book in borrowed_books %}
-        <li>{{borrowed_book.book.title}} -testing-</li>
+            {% if borrowed_book.is_overdue %}
+            <h2>Borrowed Books:</h2>
+            <li>
+                <p>{{borrowed_book.book.title}} <strong class="text-danger">{{ borrowed_book.due_back}}</strong></p>
+            </li>
+            {%else%}
+            <li>
+                <p>{{borrowed_book.book.title}} <strong class="text-success">{{ borrowed_book.due_back}}</strong></p>
+            </li>
+            {%endif%}
         {% endfor%}
     {% endif %}
 </ul>

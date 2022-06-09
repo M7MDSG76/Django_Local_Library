@@ -108,7 +108,7 @@ class BookInstance(models.Model):
                               blank = True
                               )   
     
-    borrower = models.OneToOneField(User, on_delete= models.SET_NULL, null=True, blank=True) 
+    borrower = models.ForeignKey(User, on_delete= models.SET_NULL, null=True, blank=True) 
     
     class Meta:
         ordering = ['due_back']
