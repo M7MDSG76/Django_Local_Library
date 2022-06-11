@@ -4,7 +4,7 @@
 
 <h1>{{member.first_name}} {{member.last_name}} Profile</h1>
 <h4>@{{member.user.username}}</h4>
-<h4>Email: {{member.email}}</h4>
+<h4>Email {{member.email}}</h4>
 <ul>
     {% if request.user == member.user%}
     <li><p><a href="{% url 'member-edit' member.id%}">Edit</a></p></li>
