@@ -17,7 +17,10 @@
     {% else %}
     <h3>No authors in the library</h3>
     {% endif %}
+
+    {% if perms.catalog.add_author %}
     <p><a href="{% url 'author-create' %}">Creat New author</a></p>
+    {% endif %}
     {%block paginated%}
     {% if is_paginated %}
         <div class="pagination">
